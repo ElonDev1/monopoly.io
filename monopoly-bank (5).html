@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monopoly Bank</title>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ── Authentic Monopoly Palette ── */
+:root {
+  --red:    #e31837;
+  --red-dk: #b8102b;
+  --green:  #00833d;
+  --green-dk:#006630;
+  --blue:   #0072bb;
+  --yellow: #f5e642;
+  --orange: #f7941d;
+  --cream:  #fdf6e3;
+  --cream2: #f0e8cc;
+  --board:  #c8dba0;
+  --ivory:  #fffdf5;
+  --dark:   #1a1009;
+  --gray:   #6b6050;
+  --lgray:  #b8a888;
+  --border: #c8b898;
+  --shadow: 0 3px 14px rgba(0,0,0,.13);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.2);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--cream);
+  background-image:
+    linear-gradient(rgba(200,180,140,.18) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(200,180,140,.18) 1px,transparent 1px);
+  background-size:48px 48px;
+  color:var(--dark);font-family:'Nunito',sans-serif;min-height:100vh;
+}
+
+/* Header */
+.header{
+  background:var(--red);
+  background-image:linear-gradient(135deg,var(--red) 60%,var(--red-dk));
+  color:#fff;padding:0 24px;height:70px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 4px 16px rgba(227,24,55,.4);
+  position:sticky;top:0;z-index:100;
+  border-bottom:4px solid var(--red-dk);
+}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-hat{font-size:34px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));}
+.logo-title{font-family:'Alfa Slab One',serif;font-size:22px;letter-spacing:1.5px;text-shadow:2px 2px 0 rgba(0,0,0,.3);}
+.logo-sub{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;opacity:.75;}
+.header-btn{
+  background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);
+  color:#fff;border-radius:10px;padding:8px 18px;
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;
+  cursor:pointer;transition:all .15s;
+}
+.header-btn:hover{background:rgba(255,255,255,.28);}
+.header-btn:active{transform:scale(.97);}
+
+/* Layout */
+.app{max-width:1120px;margin:0 auto;padding:24px 16px 64px;}
+
+/* Stats */
+.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;}
+.stat-box{
+  background:var(--ivory);border:3px solid var(--border);border-radius:16px;
+  padding:14px 18px;display:flex;align-items:center;gap:14px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
+.stat-box:nth-child(1)::before{background:var(--green);}
+.stat-box:nth-child(2)::before{background:var(--yellow);}
+.stat-box:nth-child(3)::before{background:var(--blue);}
+.stat-icon{font-size:28px;}
+.stat-label{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--lgray);margin-bottom:3px;}
+.stat-value{font-family:'Alfa Slab One',serif;font-size:22px;color:var(--dark);}
+
+/* Section Labels */
+.section-label{
+  font-size:11px;font-weight:900;letter-spacing:3px;text-transform:uppercase;
+  color:var(--green);margin-bottom:12px;
+  display:flex;align-items:center;gap:10px;
+}
+.section-label::after{content:'';flex:1;height:2px;background:var(--board);border-radius:2px;}
+
+/* Players */
+.players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:12px;margin-bottom:28px;}
+.player-card{
+  background:var(--ivory);border:3px solid var(--border);border-radius:18px;
+  overflow:hidden;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s;
+  position:relative;
+}
+.player-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
+.pc-stripe{height:10px;}
+.pc-body{padding:14px 14px 0;}
+.pc-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.pc-token{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 3px 8px rgba(0,0,0,.2);border:2px solid rgba(255,255,255,.6);}
+.pc-name{font-weight:900;font-size:15px;line-height:1.2;}
+.pc-balance{font-family:'Alfa Slab One',serif;font-size:30px;color:var(--green);line-height:1;}
+.pc-balance.neg{color:var(--red);}
+.pc-change{font-size:12px;font-weight:800;min-height:18px;margin-top:3px;margin-bottom:10px;}
+.pc-change.up{color:var(--green);}.pc-change.dn{color:var(--red);}.pc-change.zero{color:var(--lgray);}
+.pc-actions{display:flex;gap:6px;padding:0 14px 12px;}
+.pca-btn{flex:1;padding:6px 4px;border-radius:8px;border:none;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;transition:all .14s;}
+.pca-bk{background:#fde8e8;color:var(--red);}.pca-bk:hover{background:#f8c5c5;}
+.pca-rm{background:var(--cream2);color:var(--gray);}.pca-rm:hover{background:#ddd;}
+.player-card.bankrupt{opacity:.6;}
+.player-card.bankrupt::after{
+  content:'💸 BANKRUPT';position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(253,246,227,.85);color:var(--red);
+  font-family:'Alfa Slab One',serif;font-size:14px;letter-spacing:2px;
+  backdrop-filter:blur(2px);
+}
+.add-player-card{
+  background:transparent;border:3px dashed var(--board);border-radius:18px;
+  min-height:148px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  cursor:pointer;color:var(--green);font-weight:800;font-size:14px;transition:all .18s;
+}
+.add-player-card:hover{border-color:var(--green);background:rgba(0,131,61,.05);transform:scale(1.02);}
+.apc-plus{font-size:36px;line-height:1;font-weight:300;}
+
+/* Panel */
+.panel{background:var(--ivory);border:3px solid var(--border);border-radius:20px;padding:22px;margin-bottom:22px;box-shadow:var(--shadow);}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.panel-title{font-family:'Alfa Slab One',serif;font-size:17px;color:var(--dark);}
+
+/* Tx type tabs */
+.type-toggle{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.type-btn{
+  padding:13px 8px;border-radius:14px;border:2.5px solid var(--border);
+  background:var(--cream2);font-family:'Nunito',sans-serif;font-size:13px;font-weight:900;
+  cursor:pointer;transition:all .16s;
+  display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--gray);
+}
+.type-btn .tb-icon{font-size:22px;}
+.type-btn .tb-sub{font-size:10px;font-weight:700;opacity:.7;}
+.type-btn:hover{background:var(--cream);color:var(--dark);border-color:var(--lgray);}
+.type-btn.active-pay{background:#fdeaea;border-color:var(--red);color:var(--red);}
+.type-btn.active-collect{background:#e6f5ec;border-color:var(--green);color:var(--green);}
+.type-btn.active-transfer{background:#fff8e0;border-color:#c89600;color:#a07800;}
+
+/* Direction row */
+.dir-row{display:flex;align-items:flex-end;gap:10px;margin-bottom:18px;}
+.dir-row>div{flex:1;}
+.arrow-box{padding-bottom:12px;font-size:24px;color:var(--lgray);flex-shrink:0;}
+.field-label{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--lgray);margin-bottom:7px;}
+.field-select{
+  width:100%;background:var(--cream);border:2.5px solid var(--border);border-radius:12px;
+  padding:11px 14px;color:var(--dark);font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;
+  outline:none;transition:border-color .15s;appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6050' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;
+}
+.field-select:focus{border-color:var(--green);}
+
+/* Amount */
+.amt-wrap{position:relative;margin-bottom:14px;}
+.amt-sym{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'Alfa Slab One',serif;font-size:24px;color:var(--lgray);pointer-events:none;}
+.amt-input{
+  width:100%;background:var(--cream);border:2.5px solid var(--border);border-radius:12px;
+  padding:14px 14px 14px 42px;font-family:'Alfa Slab One',serif;font-size:34px;
+  color:var(--dark);outline:none;transition:border-color .15s;
+}
+.amt-input:focus{border-color:var(--green);background:#fff;}
+.amt-input::placeholder{color:var(--lgray);}
+.amt-input.pay-c{color:var(--red);}
+.amt-input.collect-c{color:var(--green);}
+.amt-input.transfer-c{color:#a07800;}
+
+/* Quick amounts */
+.quick-label{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--lgray);margin-bottom:8px;}
+.quick-amounts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+.qamt-btn{
+  padding:6px 13px;background:var(--cream2);border:2px solid var(--border);border-radius:8px;
+  color:var(--dark);font-size:13px;font-family:'Nunito',sans-serif;font-weight:800;
+  cursor:pointer;transition:all .12s;
+}
+.qamt-btn:hover{background:var(--yellow);border-color:#c8b800;transform:scale(1.07);}
+.qamt-btn:active{transform:scale(.96);}
+
+/* Execute btn */
+.exec-btn{
+  width:100%;padding:17px;border-radius:14px;border:none;
+  font-family:'Alfa Slab One',serif;font-size:18px;letter-spacing:.5px;
+  cursor:pointer;transition:all .15s;box-shadow:0 4px 14px rgba(0,0,0,.18);
+}
+.exec-btn:hover{filter:brightness(1.08);}
+.exec-btn:active{transform:scale(.98);box-shadow:none;}
+.eb-pay{background:var(--red);color:#fff;}
+.eb-collect{background:var(--green);color:#fff;}
+.eb-transfer{background:#c89600;color:#fff;}
+
+/* Hint */
+.hint-box{background:var(--cream2);border:2px solid var(--board);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--gray);margin-bottom:18px;}
+.step-lbl{font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--lgray);margin-bottom:10px;}
+
+/* Quick rows */
+.qr-row{padding:12px 0;border-bottom:2px solid var(--cream2);}
+.qr-row:last-child{border-bottom:none;}
+.qr-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.qr-token{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;border:2px solid rgba(0,0,0,.1);}
+.qr-name{font-weight:900;font-size:14px;}
+.qr-bal{font-family:'Alfa Slab One',serif;font-size:13px;color:var(--green);margin-left:auto;padding-right:4px;}
+.qr-bal.neg{color:var(--red);}
+.qr-section{margin-bottom:6px;}
+.qr-section-lbl{font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--lgray);margin-bottom:5px;}
+.qr-btns{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.qr-btn{
+  padding:5px 10px;border-radius:7px;border:2px solid;
+  font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;
+  cursor:pointer;transition:all .12s;white-space:nowrap;
+}
+.qr-btn.cb{background:#e6f5ec;border-color:var(--green);color:var(--green);}
+.qr-btn.cb:hover{background:var(--green);color:#fff;}
+.qr-btn.pb{background:#fdeaea;border-color:var(--red);color:var(--red);}
+.qr-btn.pb:hover{background:var(--red);color:#fff;}
+.qr-btn:active{transform:scale(.94);}
+.qr-custom{display:flex;align-items:center;gap:3px;margin-left:2px;}
+.qr-inp{
+  width:62px;background:var(--cream);border:2px solid var(--border);border-radius:7px;
+  padding:4px 6px;font-family:'Alfa Slab One',serif;font-size:13px;color:var(--dark);
+  outline:none;text-align:right;
+}
+.qr-inp:focus{border-color:var(--green);}
+.qr-go{padding:5px 9px;border-radius:7px;border:none;font-size:13px;cursor:pointer;font-weight:800;font-family:'Nunito',sans-serif;transition:all .12s;}
+.qr-go.gc{background:var(--green);color:#fff;}.qr-go.gc:hover{background:var(--green-dk);}
+.qr-go.gp{background:var(--red);color:#fff;}.qr-go.gp:hover{background:var(--red-dk);}
+
+/* History */
+.history-list{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;}
+.history-list::-webkit-scrollbar{width:4px;}
+.history-list::-webkit-scrollbar-thumb{background:var(--board);border-radius:2px;}
+.h-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;background:var(--cream);
+  border-radius:10px;border:2px solid var(--border);
+  font-size:13px;
+}
+.h-icon{font-size:17px;flex-shrink:0;}
+.h-desc{flex:1;font-weight:700;color:var(--gray);}
+.h-desc strong{color:var(--dark);}
+.h-amt{font-family:'Alfa Slab One',serif;font-size:15px;}
+.h-time{font-size:10px;color:var(--lgray);font-weight:700;white-space:nowrap;}
+.no-results{text-align:center;padding:28px;color:var(--lgray);font-weight:700;font-size:14px;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--cream);border:3px solid var(--border);border-radius:22px;padding:26px;width:370px;max-width:95vw;box-shadow:var(--shadow-lg);}
+.modal-hdr{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--board);}
+.modal-icon{font-size:28px;}
+.modal-title{font-family:'Alfa Slab One',serif;font-size:20px;color:var(--dark);}
+.mfield{margin-bottom:15px;}
+.mfield .field-label{margin-bottom:6px;}
+.m-input{width:100%;background:#fff;border:2.5px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--dark);font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;outline:none;transition:border-color .15s;}
+.m-input:focus{border-color:var(--green);}
+.m-input-money{font-family:'Alfa Slab One',serif;font-size:22px;color:var(--green);padding-left:36px;}
+.token-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px;}
+.token-opt{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border:3px solid transparent;transition:all .15s;background:var(--cream2);}
+.token-opt:hover{transform:scale(1.12);}
+.token-opt.sel{border-color:var(--dark);transform:scale(1.12);box-shadow:0 0 0 2px var(--board);}
+.color-grid{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.color-opt{width:30px;height:30px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .14s;}
+.color-opt:hover{transform:scale(1.15);}
+.color-opt.sel{border-color:var(--dark);transform:scale(1.15);outline:2px solid #fff;outline-offset:-5px;}
+.modal-actions{display:flex;gap:10px;margin-top:20px;}
+.mbtn{flex:1;padding:13px;border-radius:10px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;cursor:pointer;transition:all .14s;}
+.mbtn-cancel{background:var(--cream2);color:var(--gray);}.mbtn-cancel:hover{background:#ddd;}
+.mbtn-confirm{background:var(--green);color:#fff;font-family:'Alfa Slab One',serif;font-size:15px;flex:2;}.mbtn-confirm:hover{background:var(--green-dk);}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:28px;left:50%;
+  transform:translateX(-50%) translateY(80px);opacity:0;
+  background:var(--dark);color:#fff;
+  padding:12px 26px;border-radius:40px;
+  font-weight:800;font-size:14px;z-index:300;
+  white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.35);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+@media(max-width:620px){
+  .stats-bar{grid-template-columns:1fr 1fr;}
+  .stat-box:last-child{grid-column:1/-1;}
+  .dir-row{flex-direction:column;}
+  .arrow-box{display:none;}
+  .type-btn .tb-sub{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-hat">🎩</div>
+    <div>
+      <div class="logo-title">MONOPOLY BANK</div>
+      <div class="logo-sub">Digital Edition</div>
+    </div>
+  </div>
+  <button class="header-btn" onclick="resetGame()">🔄 New Game</button>
+</div>
+
+<div class="app">
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-box"><div class="stat-icon">💰</div><div><div class="stat-label">Total in Play</div><div class="stat-value" id="stat-total">$0</div></div></div>
+    <div class="stat-box"><div class="stat-icon">👑</div><div><div class="stat-label">Richest Player</div><div class="stat-value" id="stat-richest" style="font-size:15px;margin-top:2px;">—</div></div></div>
+    <div class="stat-box"><div class="stat-icon">📋</div><div><div class="stat-label">Transactions</div><div class="stat-value" id="stat-txn">0</div></div></div>
+  </div>
+
+  <!-- Players -->
+  <div class="section-label">Players</div>
+  <div class="players-grid" id="players-grid"></div>
+
+  <!-- Transaction Panel -->
+  <div class="section-label">New Transaction</div>
+  <div class="panel">
+    <div class="step-lbl">① What kind of transaction?</div>
+    <div class="type-toggle">
+      <button class="type-btn active-pay" id="ttb-pay" onclick="setTxType('pay')">
+        <span class="tb-icon">🏦</span>Pay Bank<span class="tb-sub">Tax, fine, buy</span>
+      </button>
+      <button class="type-btn" id="ttb-collect" onclick="setTxType('collect')">
+        <span class="tb-icon">💵</span>Collect<span class="tb-sub">Salary, cards</span>
+      </button>
+      <button class="type-btn" id="ttb-transfer" onclick="setTxType('transfer')">
+        <span class="tb-icon">🤝</span>Pay Player<span class="tb-sub">Rent, trades</span>
+      </button>
+    </div>
+    <div class="hint-box" id="tx-hint">Player pays a fine, tax, or fee to the bank.</div>
+    <div class="step-lbl">② Who's involved?</div>
+    <div class="dir-row">
+      <div><div class="field-label" id="lbl-from">Who is paying?</div><select class="field-select" id="tx-from"></select></div>
+      <div class="arrow-box">→</div>
+      <div><div class="field-label" id="lbl-to">Paying to</div><select class="field-select" id="tx-to"></select></div>
+    </div>
+    <div class="step-lbl">③ How much?</div>
+    <div class="amt-wrap">
+      <span class="amt-sym">$</span>
+      <input class="amt-input pay-c" type="number" id="tx-amount" placeholder="0" min="1">
+    </div>
+    <div class="quick-label">Quick amounts</div>
+    <div class="quick-amounts">
+      <button class="qamt-btn" onclick="setAmt(1)">$1</button>
+      <button class="qamt-btn" onclick="setAmt(5)">$5</button>
+      <button class="qamt-btn" onclick="setAmt(10)">$10</button>
+      <button class="qamt-btn" onclick="setAmt(20)">$20</button>
+      <button class="qamt-btn" onclick="setAmt(50)">$50</button>
+      <button class="qamt-btn" onclick="setAmt(100)">$100</button>
+      <button class="qamt-btn" onclick="setAmt(150)">$150</button>
+      <button class="qamt-btn" onclick="setAmt(200)">$200</button>
+      <button class="qamt-btn" onclick="setAmt(500)">$500</button>
+    </div>
+    <button class="exec-btn eb-pay" id="exec-btn" onclick="execTransaction()">💸 Pay Bank</button>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="section-label">Quick Actions Per Player</div>
+  <div class="panel">
+    <div id="quick-rows"><div class="no-results">Add players to use quick actions 🎩</div></div>
+  </div>
+
+  <!-- History -->
+  <div class="section-label">Transaction History</div>
+  <div class="panel">
+    <div class="panel-hdr">
+      <div class="panel-title">Recent Transactions</div>
+      <button onclick="clearHistory()" style="background:none;border:none;font-size:12px;font-weight:800;color:var(--lgray);cursor:pointer;letter-spacing:1px;text-transform:uppercase;">Clear All</button>
+    </div>
+    <div class="history-list" id="history-list">
+      <div class="no-results">🎲 No transactions yet — let's play!</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Add Player Modal -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-icon">🏦</span><div class="modal-title">Add Player</div></div>
+    <div class="mfield">
+      <div class="field-label">Player Name</div>
+      <input class="m-input" type="text" id="new-name" placeholder="Enter name…" maxlength="16" autocomplete="off">
+    </div>
+    <div class="mfield">
+      <div class="field-label">Starting Money</div>
+      <div class="amt-wrap" style="margin-bottom:0;">
+        <span class="amt-sym" style="font-size:18px;">$</span>
+        <input class="m-input m-input-money" type="number" id="new-balance" value="1500" min="0">
+      </div>
+    </div>
+    <div class="mfield"><div class="field-label">Pick a Token</div><div class="token-grid" id="token-grid"></div></div>
+    <div class="mfield"><div class="field-label">Pick a Color</div><div class="color-grid" id="color-grid"></div></div>
+    <div class="modal-actions">
+      <button class="mbtn mbtn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="mbtn mbtn-confirm" onclick="confirmAddPlayer()">Add to Game! 🎉</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Constants ───────────────────────────────────────────
+const TOKENS  = ['🎩','🚂','🚗','🐕','🎖️','⛵','👠','🦆','🐈','🦁','🎸','🧲'];
+const COLORS  = ['#e31837','#0072bb','#00833d','#f7941d','#8e44ad','#e91e8c','#00897b','#ff7043','#546e7a','#795548'];
+const QC_AMTS = [1,5,10,20,50,100,200,500];
+const HINTS   = {
+  pay:      'Player pays a fine, tax, or fee to the bank.',
+  collect:  'Player collects salary, Chance/Community Chest, or other bank payout.',
+  transfer: 'One player pays rent or a trade fee directly to another player.'
+};
+
+// ─── State ───────────────────────────────────────────────
+let players  = [];
+let history  = [];
+let txType   = 'pay';
+let txCount  = 0;
+let selToken = TOKENS[0];
+let selColor = COLORS[0];
+
+// ─── Utilities ───────────────────────────────────────────
+function fmt(n)      { return '$' + Math.abs(Math.round(n)).toLocaleString(); }
+function parseAmt(v) { const n = Math.round(parseFloat(v)); return isNaN(n) ? 0 : n; }
+function nowStr()    { const d = new Date(); return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0'); }
+function setAmt(a)   { document.getElementById('tx-amount').value = a; document.getElementById('tx-amount').focus(); }
+
+let _toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ─── Render: Players Grid ────────────────────────────────
+function renderPlayers() {
+  const grid = document.getElementById('players-grid');
+  grid.innerHTML = '';
+  players.forEach((p, i) => {
+    const lc = p.lastChange || 0;
+    const chStr = lc === 0 ? '&nbsp;' : lc > 0 ? `▲ +${fmt(lc)}` : `▼ −${fmt(Math.abs(lc))}`;
+    const chCls = lc > 0 ? 'up' : lc < 0 ? 'dn' : 'zero';
+    const div = document.createElement('div');
+    div.className = 'player-card' + (p.bankrupt ? ' bankrupt' : '');
+    div.innerHTML = `
+      <div class="pc-stripe" style="background:${p.color}"></div>
+      <div class="pc-body">
+        <div class="pc-top">
+          <div class="pc-token" style="background:${p.color}">${p.token}</div>
+          <div class="pc-name">${p.name}</div>
+        </div>
+        <div class="pc-balance${p.balance < 0 ? ' neg' : ''}">${fmt(p.balance)}</div>
+        <div class="pc-change ${chCls}">${chStr}</div>
+      </div>
+      <div class="pc-actions">
+        <button class="pca-btn pca-bk" onclick="event.stopPropagation();toggleBankrupt(${i})">${p.bankrupt ? '♻️ Restore' : '💀 Bankrupt'}</button>
+        <button class="pca-btn pca-rm" onclick="event.stopPropagation();removePlayer(${i})">✕ Remove</button>
+      </div>`;
+    grid.appendChild(div);
+  });
+  const add = document.createElement('div');
+  add.className = 'add-player-card';
+  add.innerHTML = '<div class="apc-plus">＋</div><div>Add Player</div>';
+  add.onclick = openAddPlayer;
+  grid.appendChild(add);
+}
+
+// ─── Render: Dropdowns ──────────────────────────────────
+function renderSelects() {
+  const fs = document.getElementById('tx-from');
+  const ts = document.getElementById('tx-to');
+  const prevF = fs.value, prevT = ts.value;
+  const bOpt  = '<option value="bank">🏦 Monopoly Bank</option>';
+  const pOpts = players.map((p,i) => `<option value="${i}">${p.token} ${p.name}  (${fmt(p.balance)})</option>`).join('');
+  const nop   = '<option value="">— add players first —</option>';
+  const flEl  = document.getElementById('lbl-from');
+  const tlEl  = document.getElementById('lbl-to');
+  if (txType === 'pay') {
+    fs.innerHTML = pOpts || nop; ts.innerHTML = bOpt;
+    flEl.textContent = 'Who is paying?'; tlEl.textContent = 'Paying to';
+  } else if (txType === 'collect') {
+    fs.innerHTML = bOpt; ts.innerHTML = pOpts || nop;
+    flEl.textContent = 'Collecting from'; tlEl.textContent = 'Who collects?';
+  } else {
+    fs.innerHTML = pOpts || nop; ts.innerHTML = pOpts || nop;
+    flEl.textContent = 'Who pays?'; tlEl.textContent = 'Who receives?';
+    if (players.length > 1) ts.selectedIndex = 1;
+  }
+  try { if (prevF) fs.value = prevF; } catch(e){}
+  try { if (prevT) ts.value = prevT; } catch(e){}
+}
+
+// ─── Render: Stats ───────────────────────────────────────
+function renderStats() {
+  const total   = players.reduce((s,p) => s + p.balance, 0);
+  const richest = players.filter(p => !p.bankrupt).sort((a,b) => b.balance - a.balance)[0];
+  document.getElementById('stat-total').textContent   = fmt(total);
+  document.getElementById('stat-richest').textContent = richest ? `${richest.token} ${richest.name}` : '—';
+  document.getElementById('stat-txn').textContent     = txCount;
+}
+
+// ─── Render: Quick Action Rows ───────────────────────────
+function renderQuickRows() {
+  const container = document.getElementById('quick-rows');
+  if (!players.length) {
+    container.innerHTML = '<div class="no-results">Add players to use quick actions 🎩</div>';
+    return;
+  }
+  container.innerHTML = players.map((p, i) => `
+    <div class="qr-row">
+      <div class="qr-top">
+        <div class="qr-token" style="background:${p.color}">${p.token}</div>
+        <div class="qr-name">${p.name}</div>
+        <div class="qr-bal${p.balance < 0 ? ' neg' : ''}">${fmt(p.balance)}</div>
+      </div>
+      <div class="qr-section">
+        <div class="qr-section-lbl">💵 Collect from Bank</div>
+        <div class="qr-btns">
+          ${QC_AMTS.map(a => `<button class="qr-btn cb" onclick="quickAction(${i},'collect',${a})">+${fmt(a)}</button>`).join('')}
+          <div class="qr-custom">
+            <input class="qr-inp" type="number" id="qri-c-${i}" placeholder="amt" min="1"
+              onkeydown="if(event.key==='Enter')quickActionCustom(${i},'collect')">
+            <button class="qr-go gc" onclick="quickActionCustom(${i},'collect')">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="qr-section" style="margin-top:8px;">
+        <div class="qr-section-lbl">🏦 Pay Bank</div>
+        <div class="qr-btns">
+          ${QC_AMTS.map(a => `<button class="qr-btn pb" onclick="quickAction(${i},'pay',${a})">-${fmt(a)}</button>`).join('')}
+          <div class="qr-custom">
+            <input class="qr-inp" type="number" id="qri-p-${i}" placeholder="amt" min="1"
+              onkeydown="if(event.key==='Enter')quickActionCustom(${i},'pay')">
+            <button class="qr-go gp" onclick="quickActionCustom(${i},'pay')">-</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ─── Render All ──────────────────────────────────────────
+function renderAll() {
+  renderPlayers();
+  renderSelects();
+  renderStats();
+  renderQuickRows();
+}
+
+// ─── Render History ──────────────────────────────────────
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (!history.length) {
+    list.innerHTML = '<div class="no-results">🎲 No transactions yet — let\'s play!</div>';
+    return;
+  }
+  const icons  = { pay:'💸', collect:'💵', transfer:'🤝' };
+  const colors = { pay:'#e31837', collect:'#00833d', transfer:'#c89600' };
+  const signs  = { pay:'−', collect:'+', transfer:'⇄ ' };
+  list.innerHTML = history.map(h => `
+    <div class="h-item">
+      <div class="h-icon">${icons[h.type]}</div>
+      <div class="h-desc">${h.desc}</div>
+      <div class="h-amt" style="color:${colors[h.type]}">${signs[h.type]}${fmt(h.amount)}</div>
+      <div class="h-time">${h.t}</div>
+    </div>`).join('');
+}
+
+function pushHistory(desc, amount, type) {
+  history.unshift({ desc, amount, type, t: nowStr() });
+  if (history.length > 60) history.pop();
+  renderHistory();
+}
+
+function clearHistory() {
+  history = []; txCount = 0;
+  renderHistory();
+  renderStats();
+}
+
+// ─── Set Transaction Type ────────────────────────────────
+function setTxType(type) {
+  txType = type;
+  ['pay','collect','transfer'].forEach(t => {
+    document.getElementById('ttb-' + t).className = 'type-btn' + (t === type ? ' active-' + t : '');
+  });
+  document.getElementById('tx-hint').textContent = HINTS[type];
+  const eb = document.getElementById('exec-btn');
+  const labels = { pay:'💸 Pay Bank', collect:'💵 Collect from Bank', transfer:'🤝 Transfer to Player' };
+  const ebCls  = { pay:'eb-pay', collect:'eb-collect', transfer:'eb-transfer' };
+  eb.textContent = labels[type];
+  eb.className   = 'exec-btn ' + ebCls[type];
+  document.getElementById('tx-amount').className = 'amt-input ' + type + '-c';
+  renderSelects();
+}
+
+// ─── Execute Transaction ─────────────────────────────────
+function execTransaction() {
+  const amount = parseAmt(document.getElementById('tx-amount').value);
+  if (!amount || amount <= 0) { toast('⚠️  Enter an amount first!'); return; }
+  const fv = document.getElementById('tx-from').value;
+  const tv = document.getElementById('tx-to').value;
+
+  if (txType === 'transfer') {
+    if (!players.length)   { toast('⚠️  Add players first!'); return; }
+    if (!fv || !tv)        { toast('⚠️  Select both players'); return; }
+    if (fv === tv)         { toast("⚠️  Can't transfer to yourself!"); return; }
+    const from = players[+fv], to = players[+tv];
+    from.balance -= amount; from.lastChange = -amount;
+    to.balance   += amount; to.lastChange   =  amount;
+    pushHistory(`${from.token} <strong>${from.name}</strong> → ${to.token} <strong>${to.name}</strong>`, amount, 'transfer');
+    toast(`🤝  ${from.name} paid ${to.name} ${fmt(amount)}`);
+  } else if (txType === 'pay') {
+    if (!players.length) { toast('⚠️  Add players first!'); return; }
+    if (!fv)             { toast('⚠️  Select a player'); return; }
+    const from = players[+fv];
+    from.balance -= amount; from.lastChange = -amount;
+    pushHistory(`${from.token} <strong>${from.name}</strong> paid the Bank`, amount, 'pay');
+    toast(`💸  ${from.name} paid ${fmt(amount)} to the bank`);
+  } else {
+    if (!players.length) { toast('⚠️  Add players first!'); return; }
+    if (!tv)             { toast('⚠️  Select a player'); return; }
+    const to = players[+tv];
+    to.balance += amount; to.lastChange = amount;
+    pushHistory(`Bank paid ${to.token} <strong>${to.name}</strong>`, amount, 'collect');
+    toast(`💵  ${to.name} collected ${fmt(amount)}`);
+  }
+
+  txCount++;
+  document.getElementById('tx-amount').value = '';
+  renderAll();
+}
+
+// ─── Quick Actions ───────────────────────────────────────
+function quickAction(playerIdx, type, amount) {
+  const p = players[playerIdx];
+  if (type === 'collect') {
+    p.balance += amount; p.lastChange = amount;
+    pushHistory(`Bank paid ${p.token} <strong>${p.name}</strong>`, amount, 'collect');
+    toast(`💵  ${p.name} collected ${fmt(amount)}`);
+  } else {
+    p.balance -= amount; p.lastChange = -amount;
+    pushHistory(`${p.token} <strong>${p.name}</strong> paid the Bank`, amount, 'pay');
+    toast(`💸  ${p.name} paid ${fmt(amount)} to the bank`);
+  }
+  txCount++;
+  renderAll();
+}
+
+function quickActionCustom(playerIdx, type) {
+  const id = `qri-${type === 'collect' ? 'c' : 'p'}-${playerIdx}`;
+  const inp = document.getElementById(id);
+  const amount = parseAmt(inp.value);
+  if (!amount || amount <= 0) { toast('⚠️  Enter an amount'); inp.focus(); return; }
+  inp.value = '';
+  quickAction(playerIdx, type, amount);
+}
+
+// ─── Reset Game ──────────────────────────────────────────
+function resetGame() {
+  if (!confirm('Start a brand new game?\n\nAll players and history will be cleared.')) return;
+  players  = [];
+  history  = [];
+  txCount  = 0;
+  txType   = 'pay';
+  document.getElementById('tx-amount').value = '';
+  renderAll();        // redraws players, selects, stats, quick rows
+  renderHistory();    // resets history list DOM
+  setTxType('pay');   // resets tab + exec button + input color
+  toast('🎲  New game started! Add your players.');
+}
+
+// ─── Add Player Modal ────────────────────────────────────
+function openAddPlayer() {
+  document.getElementById('new-name').value    = '';
+  document.getElementById('new-balance').value = 1500;
+  selToken = TOKENS[0];
+  selColor = COLORS[0];
+  document.getElementById('token-grid').innerHTML =
+    TOKENS.map(t => `<div class="token-opt${t === selToken ? ' sel' : ''}" onclick="pickToken('${t}',this)">${t}</div>`).join('');
+  document.getElementById('color-grid').innerHTML =
+    COLORS.map(c => `<div class="color-opt${c === selColor ? ' sel' : ''}" onclick="pickColor('${c}',this)" style="background:${c}"></div>`).join('');
+  document.getElementById('add-modal').classList.add('open');
+  setTimeout(() => document.getElementById('new-name').focus(), 120);
+}
+
+function pickToken(t, el) {
+  selToken = t;
+  document.querySelectorAll('.token-opt').forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function pickColor(c, el) {
+  selColor = c;
+  document.querySelectorAll('.color-opt').forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function closeModal() { document.getElementById('add-modal').classList.remove('open'); }
+
+function confirmAddPlayer() {
+  const name = document.getElementById('new-name').value.trim();
+  if (!name) { document.getElementById('new-name').focus(); return; }
+  const balance = parseAmt(document.getElementById('new-balance').value) || 1500;
+  players.push({ name, balance, token: selToken, color: selColor, bankrupt: false, lastChange: 0 });
+  closeModal();
+  renderAll();
+  toast(`🎉  ${selToken} ${name} joined with ${fmt(balance)}!`);
+}
+
+function removePlayer(i) {
+  if (!confirm(`Remove ${players[i].name} from the game?`)) return;
+  toast(`👋  ${players[i].name} left the game`);
+  players.splice(i, 1);
+  renderAll();
+}
+
+function toggleBankrupt(i) {
+  players[i].bankrupt = !players[i].bankrupt;
+  toast(players[i].bankrupt ? `💀  ${players[i].name} is bankrupt!` : `♻️  ${players[i].name} is back!`);
+  renderAll();
+}
+
+// ─── Keyboard shortcuts ──────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement.id === 'tx-amount') { e.preventDefault(); execTransaction(); }
+  if (e.key === 'Enter' && document.getElementById('add-modal').classList.contains('open')) { e.preventDefault(); confirmAddPlayer(); }
+  if (e.key === 'Escape') closeModal();
+});
+
+// ─── Boot ────────────────────────────────────────────────
+renderAll();
+setTxType('pay');
+</script>
+</body>
+</html>
